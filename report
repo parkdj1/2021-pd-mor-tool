@@ -18,8 +18,8 @@ end
 optparse.parse!
 =end
 
-incidents = PagerdutyIncidents.new()
+responses = PagerdutyIncidents.new()
 puts "incidents retrieved.\nexporting data\n"
-incidents.get_data()
+responses.get_data()
 puts "export complete"
 

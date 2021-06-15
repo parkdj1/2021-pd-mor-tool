@@ -2,10 +2,12 @@ require "pager_duty"
 require "time"
 require "date"
 require "csv"
+require './initializer.rb'
 
 $API_TOKEN = ENV['PAGERDUTY_API_KEY'] || raise("Missing ENV['PAGERDUTY_API_KEY']")
 
 class PagerdutyIncidents
+  attr_reader :incidents
   BASIC_COL = [:id,:created_at,:urgency]
 
   def initialize(month="",year="")
@@ -16,9 +18,9 @@ class PagerdutyIncidents
 
   def retrieve_incidents(start,fin)
     options = Hash.new()
-    options["since"] = start
-    options["until"] = fin
-    options["sort_by"] = "created_at:asc"
+    options[:since] = Time.parse(start.to_s)
+    options[:until] = Time.parse(fin.to_s)
+    options[:sort_by] = "created_at:asc"
 
     @incidents = @client.incidents(options)
   end
