@@ -19,7 +19,7 @@ optparse.parse!
 =end
 
 incidents = PagerdutyIncidents.new()
-puts "incidents retrieved. starting graph"
-incidents.graph()
-puts "graph export complete"
+puts "incidents retrieved.\nexporting data\n"
+incidents.get_data()
+puts "export complete"
 

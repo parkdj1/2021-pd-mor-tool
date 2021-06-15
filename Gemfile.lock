@@ -11,6 +11,8 @@ GEM
       faraday-net_http_persistent (~> 1.1)
       multipart-post (>= 1.2, < 3)
       ruby2_keywords (>= 0.0.4)
+    faraday-detailed_logger (2.3.0)
+      faraday (>= 0.8, < 2)
     faraday-em_http (1.0.0)
     faraday-em_synchrony (1.0.0)
     faraday-excon (1.1.0)
@@ -35,6 +37,8 @@ PLATFORMS
   universal-darwin-20
 
 DEPENDENCIES
+  faraday
+  faraday-detailed_logger
   gruff
   optparse
   pager_duty
