@@ -3,11 +3,13 @@ require "time"
 require "date"
 require "csv"
 
+$API_TOKEN = ENV['PAGERDUTY_API_KEY'] || raise("Missing ENV['PAGERDUTY_API_KEY']")
+
 class PagerdutyIncidents
-  BASIC_COL = ["id","created_at","urgency"]
+  BASIC_COL = [:id,:created_at,:urgency]
 
   def initialize(month="",year="")
-    @client = PagerDuty::Client.new(ENV['PAGERDUTY_API_KEY'] || raise("Missing ENV['PAGERDUTY_API_KEY']"))
+    @client = PagerDuty::Client.new(api_token: $API_TOKEN)
     set_days(month,year)
     retrieve_incidents(@since, @until)
   end
@@ -18,16 +20,16 @@ class PagerdutyIncidents
     options["until"] = fin
     options["sort_by"] = "created_at:asc"
 
-    @incidents = client.incidents(options)
+    @incidents = @client.incidents(options)
   end
 
-  def get_data(columns="")
-    columns = BASIC_COL | columns
+  def get_data(columns=[])
+    columns = BASIC_COL+columns
     CSV.open("#@since_to_#@until_pd-data.csv","w") do |csv|
       csv << columns
-      @incidents['incidents'].each do |incident|
+      @incidents.each do |incident|
         row = []
-        columns.each { |column| row << incident[column] }
+        columns.each { |column| row << incident[column]}
         csv << row
       end
     end

@@ -18,31 +18,24 @@ GEM
     faraday-excon (1.1.0)
     faraday-net_http (1.0.1)
     faraday-net_http_persistent (1.1.0)
-    gruff (0.13.0)
-      histogram
-      rmagick
-    histogram (0.2.4.1)
     multipart-post (2.1.1)
     optparse (0.1.0)
     pager_duty (0.1.2)
       sawyer (~> 0.8.0, >= 0.5.3)
     public_suffix (4.0.6)
-    rmagick (4.2.2)
     ruby2_keywords (0.0.4)
     sawyer (0.8.2)
       addressable (>= 2.3.5)
       faraday (> 0.8, < 2.0)
 
 PLATFORMS
-  universal-darwin-20
+  x86_64-darwin-20
 
 DEPENDENCIES
   faraday
   faraday-detailed_logger
-  gruff
   optparse
   pager_duty
-  rmagick
 
 BUNDLED WITH
    2.2.20
