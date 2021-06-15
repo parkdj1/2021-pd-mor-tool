@@ -29,20 +29,19 @@ module PagerDuty
         query_params["include"]       = options[:include] if options[:include]
 	
 	query_params[:limit]	      = 100           # max limit allowed by pagerduty in rest-api-v2
-        query_params[:offset]         = 0
+        offset = 100
 
         response = get "/incidents", options.merge({query: query_params})
-        puts "Total incidents in ${options[:since.month}: ${response[:total]}"
-        responses = response[:incidents]
+        aggregate = response[:incidents]
 
-        # while there are more responses, keep retrieving more by increasing the offset and fetching the next
-        while response[:more]
-          query_params[:offset]       += 100
-          response = get("/incidents", options.merge({query: query_params}))
-          responses += response[:incidents]
+        # while there are more aggregate, keep retrieving more by increasing the offset and fetching the next
+        while response[:more] && !response.key?(:error) && offset+limit < 10000
+          query_params[:offset] = offset
+          response = get "/incidents", options.merge({query: query_params})
+          offset += 100
+          aggregate.concat(response[:incidents]) if response[:incidents]
         end
-
-        response[:incidents]
+        aggregate
       end
       alias_method :incidents, :get_all_incidents
     end

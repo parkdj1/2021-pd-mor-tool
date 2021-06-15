@@ -8,12 +8,11 @@ $API_TOKEN = ENV['PAGERDUTY_API_KEY'] || raise("Missing ENV['PAGERDUTY_API_KEY']
 
 class PagerdutyIncidents
   attr_reader :incidents
-  BASIC_COL = [:id,:created_at,:urgency]
+  BASIC_COL = [:id,:created_at,:urgency,:type,:description,:summary]
 
   def initialize(month="",year="")
     @client = PagerDuty::Client.new(api_token: $API_TOKEN)
     set_days(month,year)
-    retrieve_incidents(@since, @until)
   end
 
   def retrieve_incidents(start,fin)
@@ -23,10 +22,13 @@ class PagerdutyIncidents
     options[:sort_by] = "created_at:asc"
 
     @incidents = @client.incidents(options)
+    puts "successfully retrieved incidents"
   end
 
   def get_data(columns=[])
+    retrieve_incidents(@since, @until)
     columns = BASIC_COL+columns
+
     CSV.open("#{@since}_to_#{@until}_pd-data.csv","w") do |csv|
       csv << columns
       @incidents.each do |incident|

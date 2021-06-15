@@ -20,6 +20,6 @@ optparse.parse!
 
 responses = PagerdutyIncidents.new()
 puts "incidents retrieved.\nexporting data\n"
-responses.get_data()
+responses.get_data() 
 puts "export complete"
 
