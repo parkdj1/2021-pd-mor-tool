@@ -25,7 +25,7 @@ class PagerdutyIncidents
 
   def get_data(columns=[])
     columns = BASIC_COL+columns
-    CSV.open("#@since_to_#@until_pd-data.csv","w") do |csv|
+    CSV.open("#{@since}_to_#{@until}_pd-data.csv","w") do |csv|
       csv << columns
       @incidents.each do |incident|
         row = []
@@ -42,7 +42,7 @@ class PagerdutyIncidents
     if month==""
       month = Date.today.month
       @until = Date.new(year, month, 1)
-      @since = @until.next_month
+      @since = @until.prev_month
     else
       @since = Date.new(year,month,1)
       @since.next_month < Date.today ? @until = @since.next_month : @until = Date.today
