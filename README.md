@@ -7,7 +7,8 @@
 Get a PD API key and configure it:
 `export PAGERDUTY_API_KEY="api-token-123"`
 
-## Usage
+## ENV Setup
+
 ### Teams (required)
 Specify your desired teams with a string of team ID's separated by spaces
 `export TEAMS="abc123 def456"
@@ -33,7 +34,9 @@ The data will be exported in 2 CSV files.
 One named 'START-DATE_to_END-DATE_pd-data-simple.csv' has per-day numbers in the following columns:
 
 | Day | Team | Service Name | Urgency | Number of Incidents |
+| --- | --- | --- | --- | --- |
 
 The other, named 'START-DATE_to_END-DATE_pd-data-ext' incident data for each of the entries retrieved in the following columns, in addition to any you specify:
 
 | Day | Team | Service Name | Urgency | ... |
+| --- | --- | --- | --- | --- |
