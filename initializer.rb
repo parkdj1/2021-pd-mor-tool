@@ -35,12 +35,13 @@ module PagerDuty
         aggregate = response[:incidents]
 
         # while there are more aggregate, keep retrieving more by increasing the offset and fetching the next
-        while response[:more] && !response.key?(:error) && offset+limit < 10000
+        while response[:more] && !response.key?(:error) && offset+query_params[:limit] < 10000
           query_params[:offset] = offset
           response = get "/incidents", options.merge({query: query_params})
           offset += 100
           aggregate.concat(response[:incidents]) if response[:incidents]
         end
+	puts aggregate.length().to_s
         aggregate
       end
       alias_method :incidents, :get_all_incidents

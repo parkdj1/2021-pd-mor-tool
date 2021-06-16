@@ -5,10 +5,12 @@ require "csv"
 require './initializer.rb'
 
 $API_TOKEN = ENV['PAGERDUTY_API_KEY'] || raise("Missing ENV['PAGERDUTY_API_KEY']")
+$TEAMS = ENV['TEAMS'].split(" ") || raise("Missing ENV['TEAMS']")
 
 class PagerdutyIncidents
   attr_reader :incidents
-  BASIC_COL = [:id,:created_at,:urgency,:type,:description,:summary]
+  BASIC_COL = [:created_at, :urgency, [:service,:id]] 
+#[:id,:incident_number,:description,[:service,:id],[:service,:summary],[:escalation_policy,:id],[:escalation_policy,:summary],:created_at,:last_status_change_at,:urgency,:type,:description,:summary,:assignments,:acknowledgements]
 
   def initialize(month="",year="")
     @client = PagerDuty::Client.new(api_token: $API_TOKEN)
@@ -20,6 +22,7 @@ class PagerdutyIncidents
     options[:since] = Time.parse(start.to_s)
     options[:until] = Time.parse(fin.to_s)
     options[:sort_by] = "created_at:asc"
+    options[:team_ids] = $TEAMS
 
     @incidents = @client.incidents(options)
     puts "successfully retrieved incidents"
@@ -33,7 +36,14 @@ class PagerdutyIncidents
       csv << columns
       @incidents.each do |incident|
         row = []
-        columns.each { |column| row << incident[column]}
+        columns.each { |column|
+          if column.kind_of?(Array)
+            row << incident[column[0]][column[1]]
+          elsif column == :created_at
+            row << Time.parse(incident[column]).day
+          else
+            row << incident[column]
+          end }
         csv << row
       end
     end
