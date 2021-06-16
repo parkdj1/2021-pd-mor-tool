@@ -1,7 +1,6 @@
 #!/usr/bin/env ruby
 
 require './pagerduty_incidents'
-=begin
 require "optparse"
 
 options = {}
@@ -10,16 +9,18 @@ optparse = OptionParser.new do |opts|
   These options are for ...
 
 EOS
-  opts.on("--start=START","--from="START","--since=START") {|s| options[:start] = s}
-  opts.on("--end=START","--to="START","--until=START") {|e| options[:end] = e}
   opts.on("--month=MONTH", "-m=MONTH") {|m| options[:month] = m}
   opts.on("--year=YEAR", "-y=YEAR") {|y| options[:year] = y}
 end
 optparse.parse!
-=end
 
-responses = PagerdutyIncidents.new()
-puts "incidents retrieved.\nexporting data\n"
+if options[:month]
+  year = options[:year] || ""
+  responses = PagerdutyIncidents.new(options[:month],year)
+else
+  responses = PagerdutyIncidents.new()
+end
+puts "exporting data\n"
 responses.get_data() 
 puts "export complete"
 
