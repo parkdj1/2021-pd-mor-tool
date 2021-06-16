@@ -11,7 +11,7 @@ Get a PD API key and configure it:
 
 ### Teams (required)
 Specify your desired teams with a string of team ID's separated by spaces
-`export TEAMS="abc123 def456"
+`export TEAMS="abc123 def456"`
 > If you don't know the team ID, use the [List teams](https://developer.pagerduty.com/api-reference/reference/REST/openapiv3.json/paths/~1teams/get) API call, specifying the name in the 'query' section.<br/>
 > On the PD API platform, paste your API key in the `Test API Token:` field and use the `Try It` tab
 
