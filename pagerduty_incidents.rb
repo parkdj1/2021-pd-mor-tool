@@ -15,9 +15,15 @@ class PagerdutyIncidents
   COL_NAMES = ["Day", "Team", "Service Name", "Urgency", "Description"]
 #[:id,:incident_number,:description,[:service,:id],[:service,:summary],[:escalation_policy,:id],[:escalation_policy,:summary],:created_at,:last_status_change_at,:urgency,:type,:description,:summary,:assignments,:acknowledgements]
 
-  def initialize(month="",year="")
+  def initialize(mode="def", arg1="",arg2="")
     @client = PagerDuty::Client.new(api_token: $API_TOKEN)
-    set_days(month,year)
+    if mode == "range"
+      raise("Missing Date Range") if arg1 == "" or arg2 == ""
+      @since = Date.parse(arg1)
+      @until = Date.parse(arg2)
+    else
+      set_days(arg1,arg2)
+    end
   end
 
   def retrieve_incidents(start,fin, team, urgency)
@@ -29,7 +35,7 @@ class PagerdutyIncidents
     options[:urgencies] = [urgency]
 
     @incidents = @client.incidents(options)
-    puts "successfully retrieved incidents"
+    puts "successfully retrieved incidents from #@since to #@until"
   end
 
   def get_data(columns=[])

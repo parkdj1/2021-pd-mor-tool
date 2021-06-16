@@ -23,10 +23,22 @@ Specify the urgencies you want as a string separated by spaces
 `bundle exec ./report`
 
 ### Time Frame (optional)
-By default, data from the last month is gathered (i.e. if today is June 16, the data will be for May 1 to May 31) <br/>
-If you want a different month, specify using the --month or -m flag with a number <br/>
-Optionally, you can also specify the year by using the --year or -y flag (Note: you must specify a month if you specify a year) <br/>
-`bundle exec ./report -m 4 -y 2020`
+By default, data from the last month is gathered <br/>
+(i.e. if today is June 16, the data will be for May 1 to May 31) <br/>
+
+There are 2 options for specifying the time frame:
+
+1. Provide a month (and optionally year) as arguments (specify flag --mode or -m "def")
+`bundle exec ./report --mode="def" 4 2020          # queries for the month of April 2020`
+
+2. Provide a start and end date as arguments (specify flag --mode or -m "range)
+`bundle exec ./report --mode="range" 2020-04-01 202-04-20`
+
+### Columns (optional)
+Specify any columns to export in the '-ext' csv file
+> represent column names as symbols (i.e. :acknowledgements) separated by spaces in a single string <br/>
+> for nested values, use brackets and commas as follows `[:outer,[:inner]]`
+`bundle exec ./report -c ":last_status_change_at [:escalation_policy,[:type]] :acknowledgements"`
 
 ## Results
 The data will be exported in 2 CSV files.

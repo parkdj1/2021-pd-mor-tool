@@ -9,18 +9,38 @@ optparse = OptionParser.new do |opts|
   These options are for ...
 
 EOS
-  opts.on("--month=MONTH", "-m=MONTH") {|m| options[:month] = m}
-  opts.on("--year=YEAR", "-y=YEAR") {|y| options[:year] = y}
+  opts.on("--mode=MODE", "-m=MODE") {|m| options[:mode] = m}
+  opts.on("--columns=COLUMNS", "-c=COLUMNS") {|c| options[:columns] = c}
 end
 optparse.parse!
 
-if options[:month]
-  year = options[:year] || ""
-  responses = PagerdutyIncidents.new(options[:month],year)
-else
-  responses = PagerdutyIncidents.new()
+if options[:mode]
+  mode = options[:mode]
+  raise("Mode specified but no arguments given") if !ARGV[0] || !ARGV[1]
+elsif ARGV[0]
+  puts "Warning: arguments given but no mode specified.\nEnter a mode or return to continue to default "
+  mode = gets.chomp
+  if mode != "def" && mode != "range"
+    puts "Continuing to default..."
+    ARGV[0] = ""
+    ARGV[1] = ""
+  end
 end
+
+arg1 = ARGV[0] || ""
+arg2 = ARGV[1] || ""
+
+responses = PagerdutyIncidents.new(mode,arg1,arg2)
+
 puts "exporting data\n"
-responses.get_data() 
+
+if options[:columns]
+  columns = options[:columns].split(" ")
+else
+  columns = []
+end
+
+responses.get_data(columns)
+
 puts "export complete"
 
