@@ -5,7 +5,7 @@
 
 ## Pagerduty Setup
 Get a PD API key and configure it:
-`export PAGERDUTY_API_KEY="api-token-123"
+`export PAGERDUTY_API_KEY="api-token-123"`
 
 ## Usage
 ### Teams (required)
