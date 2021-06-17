@@ -7,6 +7,7 @@ require './initializer.rb'
 $API_TOKEN = ENV['PAGERDUTY_API_KEY'] || raise("Missing ENV['PAGERDUTY_API_KEY']")
 $TEAMS = ENV['TEAMS'].split(" ") || raise("Missing ENV['TEAMS']")
 $URGENCIES = ENV['URGENCIES'] ? ENV['URGENCIES'].split(" ") : ["high","low"]
+$DATE_FORMAT = "%m-%d-%Y"
 
 class PagerdutyIncidents
   attr_reader :incidents
@@ -19,8 +20,8 @@ class PagerdutyIncidents
     @client = PagerDuty::Client.new(api_token: $API_TOKEN)
     if mode == "range"
       raise("Missing Date Range") if arg1 == "" or arg2 == ""
-      @since = Date.parse(arg1)
-      @until = Date.parse(arg2)
+      @since = Date.strptime(arg1,$DATE_FORMAT)
+      @until = Date.strptime(arg2,$DATE_FORMAT)
     else
       set_days(arg1,arg2)
     end
@@ -38,7 +39,7 @@ class PagerdutyIncidents
     puts "successfully retrieved incidents from #@since to #@until"
   end
 
-  def get_data(columns=[])
+  def get_data(ext=true,columns=[])
     simple = Hash.new(0)
     ext = []
     @until.month == @since.month && @until.year == @since.year ? single = true : single = false
@@ -60,8 +61,9 @@ class PagerdutyIncidents
           simple[[date,team,service,urgency]] += 1
           
           columns.each { |column|
-            if column.is_a?(Array)
-              row << incident[column[0]][column[1]]
+            if column =~ /\[/
+              path = column.tr(':[]','').split(',').map{|c| c.to_sym}
+              row << incident[path[0]][path[1]]
             else
               row << incident[column]
             end }
@@ -71,9 +73,11 @@ class PagerdutyIncidents
       end
     end
 
-    CSV.open("#{@since}_to_#{@until}_pd-data-ext.csv","w") do |csv|
-      csv << COL_NAMES + columns
-      ext.each { |row| csv << row }
+    if ext =~ /f/
+      CSV.open("#{@since}_to_#{@until}_pd-data-ext.csv","w") do |csv|
+        csv << COL_NAMES + columns.map{|name| name.tr(':[]','').tr('_',' ').tr(',',': ').capitalize}
+        ext.each { |row| csv << row }
+      end
     end
     
     CSV.open("#{@since}_to_#{@until}_pd-data-simple.csv","w") do |csv|

@@ -6,11 +6,22 @@ require "optparse"
 options = {}
 optparse = OptionParser.new do |opts|
   opts.banner = <<-EOS
-  These options are for ...
+Usage: `bundle exec ./report`
 
+Options:
+        -m, --mode       specifying timeframe (default: "def", "range")
+                           - "def" can take 0-2 int arguments (MONTH YEAR)
+                           - "range" must have 2 arguments (SINCE UNTIL)
+                             format : %m-%d-%Y (i.e. 04-20-2020 05-08-2020)
+        -c, --columns    columns to see in extended csv as string of symbols separated by spaces
+                           i.e. ":c1 :c2 :c3" (see doc for more details)
+        -e, --ext        set true or false to toggle detailed csv report export (default: true)
+
+Note: Try to make queries on the more specific side when possible to avoid PagerDuty errors
 EOS
   opts.on("--mode=MODE", "-m=MODE") {|m| options[:mode] = m}
   opts.on("--columns=COLUMNS", "-c=COLUMNS") {|c| options[:columns] = c}
+  opts.on("--ext=EXT", "-e=EXT") {|e| options[:ext] = e}
 end
 optparse.parse!
 
@@ -34,13 +45,10 @@ responses = PagerdutyIncidents.new(mode,arg1,arg2)
 
 puts "exporting data\n"
 
-if options[:columns]
-  columns = options[:columns].split(" ")
-else
-  columns = []
-end
+options[:columns] ? columns = options[:columns].split(" ") : columns = []
+options[:ext] ? ext = options[:ext].strip.downcase : ext = true
 
-responses.get_data(columns)
+responses.get_data(ext,columns)
 
 puts "export complete"
 
