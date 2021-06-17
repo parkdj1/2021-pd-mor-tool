@@ -12,8 +12,9 @@ Get a PD API key and configure it:
 ### Teams (required)
 Specify your desired teams with a string of team ID's separated by spaces
 `export TEAMS="abc123 def456"`
-> If you don't know the team ID, use the [List teams](https://developer.pagerduty.com/api-reference/reference/REST/openapiv3.json/paths/~1teams/get) API call, specifying the name in the 'query' section.<br/>
-> On the PD API platform, paste your API key in the `Test API Token:` field and use the `Try It` tab
+> If you don't know the team ID, use the [List teams API call,](https://developer.pagerduty.com/api-reference/reference/REST/openapiv3.json/paths/~1teams/get) <br/>
+> On the PD API platform, paste your API key in the `Test API Token:` field and navigate to the `Try It` tab. <br/>
+> Specify a name in the 'query' section and hit send to retrieve results. The results will be displayed below.
 
 ### Urgency (optional)
 Specify the urgencies you want as a string separated by spaces
@@ -50,16 +51,19 @@ There are 2 options for specifying the time frame:
 
 ### Columns (optional)
 Specify any columns to export in the '-ext' csv file
-Represent column names as a single string of symbols (i.e. :acknowledgements) separated by spaces <br/>
-> for nested values, use brackets and commas as follows `[:path,:to,:value]` <br/>
+Represent column names as a single string of symbols (i.e. :acknowledgements) separated by spaces. <br/>
+> For nested values, use brackets and commas as follows `[:path,:to,:value]` <br/>
+
 `bundle exec ./report -c ":last_status_change_at [:escalation_policy,:type] :acknowledgements"`
 
 Note: If you specify a column that is already listed in the column header below, you will have duplicate columns
 
 Examples:
-| :id | :incident_number | :description | :created_at |:last_status_change_at |
-| :urgency | :type | :description | :summary | :assignments |
-| [:service,:summary] | [:escalation_policy,:id] | [:escalation_policy,:summary] | [:occurrence,:category] | [:occurrence,:frequency] |
+
+| :id | :incident_number | :description | :created_at |
+| :-- | :-- | :-- | :-- |
+| **:type** | **:description** | **:summary** | **:assignments** |
+| **[:service,:summary]** | **[:escalation_policy,:summary]** | **[:occurrence,:category]** | **[:occurrence,:frequency]** |
 > For additional column options, check out the [PagerDuty API response schema for 'List Incidents'](https://developer.pagerduty.com/api-reference/reference/REST/openapiv3.json/paths/~1incidents/get)
 
 ## Results
