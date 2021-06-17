@@ -43,16 +43,24 @@ By default, data from the last month is gathered <br/>
 There are 2 options for specifying the time frame:
 
 1. Provide a month (and optionally year) as arguments (specify flag --mode or -m "def") <br/>
-`bundle exec ./report --mode="def" 4 2020          # queries for the month of April 2020`
+`bundle exec ./report --mode="def" 4 2020`
 
 2. Provide a start and end date as arguments in %m-%d-%y format (specify flag --mode or -m "range)
 `bundle exec ./report --mode="range" 04-20-2020 12-3-2020`
 
 ### Columns (optional)
 Specify any columns to export in the '-ext' csv file
-> represent column names as symbols (i.e. :acknowledgements) separated by spaces in a single string <br/>
+Represent column names as a single string of symbols (i.e. :acknowledgements) separated by spaces <br/>
 > for nested values, use brackets and commas as follows `[:path,:to,:value]` <br/>
 `bundle exec ./report -c ":last_status_change_at [:escalation_policy,:type] :acknowledgements"`
+
+Note: If you specify a column that is already listed in the column header below, you will have duplicate columns
+
+Examples:
+| :id | :incident_number | :description | :created_at |:last_status_change_at |
+| :urgency | :type | :description | :summary | :assignments |
+| [:service,:summary] | [:escalation_policy,:id] | [:escalation_policy,:summary] | [:occurrence,:category] | [:occurrence,:frequency] |
+> For additional column options, check out the [PagerDuty API response schema for 'List Incidents'](https://developer.pagerduty.com/api-reference/reference/REST/openapiv3.json/paths/~1incidents/get)
 
 ## Results
 The data will be exported in 2 CSV files.
