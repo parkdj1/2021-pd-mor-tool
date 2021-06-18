@@ -1,54 +1,72 @@
 #!/usr/bin/env ruby
 
-require './pagerduty_incidents'
+require '.lib/pagerduty_incidents'
 require "optparse"
 
-options = {}
-optparse = OptionParser.new do |opts|
-  opts.banner = <<-EOS
-Usage: `bundle exec ./report`
 
-Options:
-        -m, --mode       specifying timeframe (default: "def", "range")
-                           - "def" can take 0-2 int arguments (MONTH YEAR)
-                           - "range" must have 2 arguments (SINCE UNTIL)
+### CONFIGURE FLAG OPTIONS
+options = {}
+OptionParser.new do |opts|
+
+  opts.banner = <<-EOS
+Run Command: `bundle exec ./report`
+
+Arguments: 0 - 2 arguments accepted, based on mode
+
+Flag Options:
+        -m, --mode       Specifying timeframe (default: "def")
+                           - "def" : run function with 0 to 2 arguments (MONTH YEAR)
+                             - no arguments : default to previous month, current year
+                           - "range" run function with 2 arguments (SINCE UNTIL)
                              format : %m-%d-%Y (i.e. 04-20-2020 05-08-2020)
-        -c, --columns    columns to see in extended csv as string of symbols separated by spaces
-                           i.e. ":c1 :c2 :c3" (see doc for more details)
-        -e, --ext        set true or false to toggle detailed csv report export (default: true)
+        -e, --ext        Toggle detailed csv report export.
+                           - no flag : false (no export)
+                           - flag, no argument : true (export)
+                           - flag, argument : set based on argument
+        -c, --columns    Columns to see in extended report as an array of strings separated by ','
+                           i.e. c1,c2,c3 (see doc for more details)
+        -v, --verbose    Toggle verbose mode (default: off)
+        -h, --help       Display flag options
 
 Note: Try to make queries on the more specific side when possible to avoid PagerDuty errors
 EOS
-  opts.on("--mode=MODE", "-m=MODE") {|m| options[:mode] = m}
-  opts.on("--columns=COLUMNS", "-c=COLUMNS") {|c| options[:columns] = c}
-  opts.on("--ext=EXT", "-e=EXT") {|e| options[:ext] = e}
-end
-optparse.parse!
 
-if options[:mode]
-  mode = options[:mode]
-  raise("Mode specified but no arguments given") if !ARGV[0] || !ARGV[1]
-elsif ARGV[0]
-  puts "Warning: arguments given but no mode specified.\nEnter a mode or return to continue to default "
-  mode = gets.chomp
-  if mode != "def" && mode != "range"
-    puts "Continuing to default..."
-    ARGV[0] = ""
-    ARGV[1] = ""
-  end
-end
+  opts.on("--mode=MODE", "-m=MODE") {|m| options[:mode] = m}
+  opts.on("--columns=COLUMNS", "-c=COLUMNS", Array) {|c| options[:columns] = c}
+  opts.on("--ext=ext", "-e=ext") {|e| options[:ext] = e || true}
+  opts.on("-v", "--verbose") {options[:verbose] = true}
+  opts.on("-h", "--help") {puts opts.banner && exit}
+end.parse!
+
+`conf.echo = false` unless options[:verbose] = true
+
+### PROCESS ARGUMENTS AND FLAG OPTIONS
+mode = options[:mode] || "def"
+raise("TOO FEW ARGUMENTS FOR SPECIFIED MODE") if !options[:mode] != "def && !ARGV[1]
 
 arg1 = ARGV[0] || ""
 arg2 = ARGV[1] || ""
 
+columns = options[:columns] || []
+
+
+
+### RETRIEVE DATA FROM PAGERDUTY 
 responses = PagerdutyIncidents.new(mode,arg1,arg2)
 
+
+
+### PARSE THROUGH PAGERDUTY DATA AND EXPORT AS CSV
 puts "exporting data\n"
-
-options[:columns] ? columns = options[:columns].split(" ") : columns = []
-options[:ext] ? ext = options[:ext].strip.downcase : ext = true
-
-responses.get_data(ext,columns)
-
+file_name, team_names = responses.get_data(options[:ext],columns)
 puts "export complete"
 
+
+
+### PLOT DATA
+exit if !plot
+puts "starting plots..."
+team_names.each { |team| `./plot "#{file_name}-team.csv"`}
+
+
+puts "Report Complete. Have a great month!"

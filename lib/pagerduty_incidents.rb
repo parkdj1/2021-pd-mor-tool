@@ -8,13 +8,20 @@ $API_TOKEN = ENV['PAGERDUTY_API_KEY'] || raise("Missing ENV['PAGERDUTY_API_KEY']
 $TEAMS = ENV['TEAMS'].split(" ") || raise("Missing ENV['TEAMS']")
 $URGENCIES = ENV['URGENCIES'] ? ENV['URGENCIES'].split(" ") : ["high","low"]
 $DATE_FORMAT = "%m-%d-%Y"
+$ARR_PATHS = {
+  :teams => [:id,:summary,:type,:self,:html_url],
+  :pending_actions => [:type, :at],
+  :assignments => [:at, :assignee],
+  :acknowledgements => [:at, :acknowledger],
+}
+$TEAM_NAMES = Array.new($TEAMS.length,nil)
+$FILE_NAME = "#{@since}_to_#{@until}_pd-data-"
 
 class PagerdutyIncidents
   attr_reader :incidents
   # changing the order of the basic columns will mess things up 
   BASIC_COL = [:created_at, [:service,:summary], :urgency, :description] 
   COL_NAMES = ["Day", "Team", "Service Name", "Urgency", "Description"]
-#[:id,:incident_number,:description,[:service,:id],[:service,:summary],[:escalation_policy,:id],[:escalation_policy,:summary],:created_at,:last_status_change_at,:urgency,:type,:description,:summary,:assignments,:acknowledgements]
 
   def initialize(mode="def", arg1="",arg2="")
     @client = PagerDuty::Client.new(api_token: $API_TOKEN)
@@ -36,55 +43,84 @@ class PagerdutyIncidents
     options[:urgencies] = [urgency]
 
     @incidents = @client.incidents(options)
-    puts "successfully retrieved incidents from #@since to #@until"
   end
 
   def get_data(ext=true,columns=[])
-    simple = Hash.new(0)
+    puts "Parsing API data"
+    num_days = @until - @since + 1
+    # maps each team to a map of each day to each service to an array of number of incidents for each urgency
+    team_data = Array.new($TEAMS.length, Hash.new())
     ext = []
     @until.month == @since.month && @until.year == @since.year ? single = true : single = false
-    
+    services = []
+
     # query all incidents for each team/urgency level pair
     # (PD gets overwhelmed w large requests)
     $TEAMS.each do |team|
+      simple = team_data[$TEAMS.index(team)]
       $URGENCIES.each do |urgency|
         retrieve_incidents(@since, @until, team, urgency)
+        urg_index = $URGENCIES.index(urgency)
 
+        # parse info for last pagerduty call
         @incidents.each do |incident|
-          row = []
-          
+          # basic info
           single ? date = incident[BASIC_COL[0]].day : date = incident[BASIC_COL[0]].strftime("%m.%d")
           service = incident[BASIC_COL[1][0]][BASIC_COL[1][1]]
           description = incident[BASIC_COL[2]]
+          team_name = incident[:teams][$ARR_PATHS[:teams].index(:summary)]
+          ############## FOR DEBUGGING; DELTE #####################
+          puts incident[:teams] $ARR_PATHS[:teams].index(:summary) && exit if !team_name
           
-          row << date << team << service << urgency << description
-          simple[[date,team,service,urgency]] += 1
-          
-          columns.each { |column|
-            if column =~ /\[/
-              path = column.tr(':[]','').split(',').map{|c| c.to_sym}
-              row << incident[path[0]][path[1]]
-            else
-              row << incident[column]
-            end }
-            
-          ext << row
+          $TEAM_NAMES[$TEAMS.index(team)] ||= team_name
+          simple[date] = Hash.new(Array.new($URGENCIES.length, 0)) if !simple.key? date
+          simple[date][service][urg_index] += 1
+          services << service if !services.include? service
+
+          # gather extra details for -ext csv file
+          if ext =~ /f/
+            row = []
+            row << date << team_name << service << urgency << description
+            columns.each { |column|
+              if column =~ /\[/
+                path = column.tr(':[]','').split(',').map{|c| c.to_sym}
+                path[1] = $ARR_PATHS[path[0]].index(path[1]) if $ARR_PATHS.key? path[0]
+                row << incident[path[0]][path[1]]
+              else
+                row << incident[column.to_sym]
+              end }
+            ext << row
+          end
         end
       end
     end
 
+    services.sort!
+
+    # write data to csv files
+    puts "Writing data to files"
+
+    team_data.zip($TEAM_NAMES).each { |team, name|
+      puts "writing to #{name} csv"
+      CSV.open("#{$FILE_NAME}#{name}.csv","w") do |csv|
+        header = ["Day"]
+        services.each {|service| header = header + [service] + $URGENCIES}
+        csv << header
+        team.each { |day, counts|
+          row = [day]
+          services.each { |service| row = row + [counts[service].sum] + counts[service] }
+          csv << row 
+        end }
+      end }
+
     if ext =~ /f/
-      CSV.open("#{@since}_to_#{@until}_pd-data-ext.csv","w") do |csv|
+      CSV.open("#{$FILE_NAME}ext.csv","w") do |csv|
         csv << COL_NAMES + columns.map{|name| name.tr(':[]','').tr('_',' ').tr(',',': ').capitalize}
         ext.each { |row| csv << row }
       end
     end
-    
-    CSV.open("#{@since}_to_#{@until}_pd-data-simple.csv","w") do |csv|
-      csv << ["Day","Team","Service Name","Urgency","Number of Incidents"]
-      simple.each { |params, number| csv << (params << number) }
-    end
 
+  return $FILE_NAME,$TEAM_NAMES
   end
 
   # Set the @since and @until dates for a specified month
