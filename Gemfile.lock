@@ -16,6 +16,8 @@ GEM
     faraday-em_http (1.0.0)
     faraday-em_synchrony (1.0.0)
     faraday-excon (1.1.0)
+    faraday-http-cache (2.2.0)
+      faraday (>= 0.8)
     faraday-net_http (1.0.1)
     faraday-net_http_persistent (1.1.0)
     multipart-post (2.1.1)
@@ -34,6 +36,7 @@ PLATFORMS
 DEPENDENCIES
   faraday
   faraday-detailed_logger
+  faraday-http-cache
   optparse
   pager_duty
 

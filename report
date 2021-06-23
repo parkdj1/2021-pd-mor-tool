@@ -1,8 +1,7 @@
 #!/usr/bin/env ruby
 
-require '.lib/pagerduty_incidents'
 require "optparse"
-
+require './lib/pagerduty_incidents'
 
 ### CONFIGURE FLAG OPTIONS
 options = {}
@@ -19,13 +18,10 @@ Flag Options:
                              - no arguments : default to previous month, current year
                            - "range" run function with 2 arguments (SINCE UNTIL)
                              format : %m-%d-%Y (i.e. 04-20-2020 05-08-2020)
-        -e, --ext        Toggle detailed csv report export.
-                           - no flag : false (no export)
-                           - flag, no argument : true (export)
-                           - flag, argument : set based on argument
+        -e, --[no-]ext   Toggle detailed csv report export (default: off)
         -c, --columns    Columns to see in extended report as an array of strings separated by ','
                            i.e. c1,c2,c3 (see doc for more details)
-        -v, --verbose    Toggle verbose mode (default: off)
+        -p, --[no-]plot  Toggle plotting mode (default: on)
         -h, --help       Display flag options
 
 Note: Try to make queries on the more specific side when possible to avoid PagerDuty errors
@@ -33,40 +29,42 @@ EOS
 
   opts.on("--mode=MODE", "-m=MODE") {|m| options[:mode] = m}
   opts.on("--columns=COLUMNS", "-c=COLUMNS", Array) {|c| options[:columns] = c}
-  opts.on("--ext=ext", "-e=ext") {|e| options[:ext] = e || true}
-  opts.on("-v", "--verbose") {options[:verbose] = true}
+  opts.on("--[no-]ext", "-e") {|e| options[:ext] = e}
+  opts.on("--[no-]plot", "-p") {|p| options[:plot] = p}  
+#  opts.on("-v", "--verbose") {options[:verbose] = true}
+#        -v, --verbose    Toggle verbose mode (default: off)
   opts.on("-h", "--help") {puts opts.banner && exit}
 end.parse!
 
-`conf.echo = false` unless options[:verbose] = true
+
 
 ### PROCESS ARGUMENTS AND FLAG OPTIONS
 mode = options[:mode] || "def"
-raise("TOO FEW ARGUMENTS FOR SPECIFIED MODE") if !options[:mode] != "def && !ARGV[1]
+raise("TOO FEW ARGUMENTS FOR SPECIFIED MODE") if options[:mode] == "range" && !ARGV[1]
 
 arg1 = ARGV[0] || ""
 arg2 = ARGV[1] || ""
 
+ext = options[:ext] || false
 columns = options[:columns] || []
-
+plot = options[:plot] || true
 
 
 ### RETRIEVE DATA FROM PAGERDUTY 
 responses = PagerdutyIncidents.new(mode,arg1,arg2)
 
 
-
 ### PARSE THROUGH PAGERDUTY DATA AND EXPORT AS CSV
-puts "exporting data\n"
-file_name, team_names = responses.get_data(options[:ext],columns)
-puts "export complete"
-
+puts "Exporting data"
+slength = responses.get_data(ext,columns,plot)
+puts "Export complete"
 
 
 ### PLOT DATA
-exit if !plot
-puts "starting plots..."
-team_names.each { |team| `./plot "#{file_name}-team.csv"`}
-
+if plot
+  puts "Starting plots..."
+  urg = (["All"] + PagerdutyIncidents::URGENCIES.map{|u| u.capitalize}).join(',')
+  system("./plot.py #{urg} #{responses.team_names.join(',').tr(' ','_')} #{responses.since.strftime("%Y-%B-%m-%d")} #{responses.until.strftime("%Y-%B-%m-%d")}")
+end
 
 puts "Report Complete. Have a great month!"

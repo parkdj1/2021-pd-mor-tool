@@ -1,4 +1,7 @@
 require 'pager_duty'
+require 'faraday'
+require 'faraday/detailed_logger'
+require 'faraday/http_cache'
 
 # reconfigure incident method in pagerduty module to return all incidents with offset/limit
 
@@ -41,10 +44,24 @@ module PagerDuty
           offset += 100
           aggregate.concat(response[:incidents]) if response[:incidents]
         end
-	puts aggregate.length().to_s
+	puts "Retrieved #{aggregate.length().to_s} incidents"
         aggregate
       end
       alias_method :incidents, :get_all_incidents
     end
   end
 end
+
+
+
+# construct middleware for caching
+
+stack = Faraday::RackBuilder.new do |builder|
+  builder.use Faraday::HttpCache, serializer: Marshal, shared_cache: false
+  builder.use PagerDuty::Response::RaiseError
+  builder.adapter Faraday.default_adapter
+end
+PagerDuty.middleware = stack
+
+
+
