@@ -44,12 +44,9 @@ Data is exported in a csv file named 'START-DATE_to_END-DATE_pd-data_TEAM.csv' c
 
 ## Flags
 ```
-Arguments: 0 - 2 arguments accepted, based on mode
-
 Flag Options:
         -m, --mode       Specifying timeframe (default: "def")
                            - "def" : run function with 0 to 2 arguments (MONTH YEAR)
-                             - no arguments : default to previous month, current year
                            - "range" run function with 2 arguments (SINCE UNTIL)
                              format : %m-%d-%Y (i.e. 04-20-2020 05-08-2020)
         -e, --[no-]ext   Toggle detailed csv report export (default: off)
@@ -93,7 +90,7 @@ The requested data will be exported to a single csv file named 'START-DATE_to_EN
 | Day | Team | Service Name | Urgency | ... |
 | --- | --- | --- | --- | --- |
 
-Examples:
+Examples Columns:
 
 | :id | :incident_number | :description | :created_at |
 | :-- | :-- | :-- | :-- |
