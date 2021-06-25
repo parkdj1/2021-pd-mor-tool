@@ -18,7 +18,7 @@ Also install the matplotlib and pandas libraries using pip install
 ## ENV Setup
 
 ### Teams (required)
-Specify your desired teams with a string of team ID's separated by semi-colons(';')
+Specify your desired teams with a string of team ID's separated by semi-colons(';') <br/>
 `export TEAMS="ID_1;ID_2"`
 
 > If you don't know the team ID, use the [List teams API call,](https://developer.pagerduty.com/api-reference/reference/REST/openapiv3.json/paths/~1teams/get) <br/>
@@ -26,7 +26,7 @@ Specify your desired teams with a string of team ID's separated by semi-colons('
 > Specify a name in the 'query' section and hit send to retrieve results. The results will be displayed below.
 
 #### Services (optional)
-Specify your desired services per team using the TEAMS variable separated by commas(',') following the team id and colon(':')
+Specify your desired services per team by listing the service names separated by commas(',') following each team id <br/>
 `export TEAMS="ID_1:service1,service2;ID_2:service1,service2,service3"`
 
 ### Urgency (optional)
