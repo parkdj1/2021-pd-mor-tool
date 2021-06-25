@@ -55,7 +55,6 @@ responses = PagerdutyIncidents.new(mode,arg1,arg2)
 
 
 ### PARSE THROUGH PAGERDUTY DATA AND EXPORT AS CSV
-puts "Exporting data"
 slength = responses.get_data(ext,columns,plot)
 puts "Export complete"
 

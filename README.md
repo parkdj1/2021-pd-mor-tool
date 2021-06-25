@@ -32,6 +32,7 @@ Specify the urgencies you want as a string separated by spaces
 ## Basic Command
 > Simplest way to run a report.<br/>
 > Returns data and plots for the previous month (i.e. if today is 6/23/2021, returns report for May)<br/>
+
 `bundle exec ./report`
 
 Note: When possible, make the queries more specific rather than less as to not overwhelm PagerDuty
