@@ -30,8 +30,8 @@ module PagerDuty
         query_params["user_ids[]"]    = user_ids.join(",") if user_ids.length > 0
         query_params["urgencies"]     = options[:urgencies] if options[:urgencies]
         query_params["include"]       = options[:include] if options[:include]
-	
-	query_params[:limit]	      = 100           # max limit allowed by pagerduty in rest-api-v2
+
+	      query_params[:limit]	      = 100           # max limit allowed by pagerduty in rest-api-v2
         offset = 100
 
         response = get "/incidents", options.merge({query: query_params})
@@ -49,6 +49,16 @@ module PagerDuty
       end
       alias_method :incidents, :get_all_incidents
     end
+    def get_service_ids(team_ids=[],desired_services)
+      query_params = Hash.new
+      query_params["team_ids[]"]    = team_ids.join(",") if team_ids.length > 0
+      sids = {}
+      response = get "/services", {query: query_params}
+      response[:services].each do |s|
+        sids[s[:name]] = s[:id] if desired_services.flatten.include? s[:name]
+      end
+      sids
+    end
   end
 end
 
@@ -56,12 +66,16 @@ end
 
 # construct middleware for caching
 
+class Faraday::HttpCache::CacheControl
+  def initialize(header)
+    @directives = parse(header.to_s)
+    @directives['no-cache'] = true
+  end
+end
+
 stack = Faraday::RackBuilder.new do |builder|
   builder.use Faraday::HttpCache, serializer: Marshal, shared_cache: false
   builder.use PagerDuty::Response::RaiseError
   builder.adapter Faraday.default_adapter
 end
 PagerDuty.middleware = stack
-
-
-

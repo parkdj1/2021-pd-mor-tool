@@ -38,18 +38,14 @@ class PagerdutyIncidents
   end
 
   # send 'list incidents' pagerduty api request
-  def retrieve_incidents(start,fin, team, urgency, ids=nil)
+  def retrieve_incidents(start,fin, team, urgency)
+    # get service ids if supplied with service names
+    @sids = @client.get_service_ids(TEAMS,SERVICES) if SERVICES && !@sids
+    ids = @sids.values_at(*@services) if SERVICES
+
+    # set options for incidents query
     options = Hash.new()
     options[:team_ids] = [team]
-
-    # get service ids if supplied with service names
-    if SERVICES && !@sids
-      @sids = {}
-      idhash = @client.services(options)
-      idhash.each {|s| sid[s[:name]] = s[:id] if SERVICES.flatten.include? s[:name] }
-    end
-
-    # set other options for incidents query
     options[:since] = Time.parse(start.to_s)
     options[:until] = Time.parse(fin.to_s)
     options[:sort_by] = "created_at:asc"
@@ -78,12 +74,11 @@ class PagerdutyIncidents
     # process by teams (query + export)
     TEAMS.zip(0...TEAMS.length).each do |team,num|
       @team_data = Hash.new()
-      ids = @sids.valuesat(SERVICES) if SERVICES
-      SERVICES ? @services = SERVICES[num] : @services = []
+      @services = SERVICES ? SERVICES[num] : []
 
       # query and process by urgency (lower risk of overwhelming PD)
       URGENCIES.zip(0...URGENCIES.length).each do |urgency,ind|
-        retrieve_incidents(@since, @until, team, urgency, ids)
+        retrieve_incidents(@since, @until, team, urgency)
         parse_incidents(onemonth, num, ind, ext_)
       end
 
@@ -118,7 +113,8 @@ class PagerdutyIncidents
 
       if SERVICES
         @team_data[date] = Array.new(@services.length){Array.new(URGENCIES.length,0)} if !@team_data.key? date
-        @team_data[date][@services.index(service)][ind] += 1
+        sindex = @services.index(service) || next
+        @team_data[date][sindex][ind] += 1
       else
         @team_data[date] = Hash.new() if !@team_data.key? date
         @team_data[date][service.to_sym] = Array.new(URGENCIES.length, 0) if !@team_data[date].key? service.to_sym
@@ -152,7 +148,7 @@ class PagerdutyIncidents
       @team_data.each { |day, counts|
         row = [day]
         if SERVICES
-          (0...@services.length).each {|s| counts[service] ? row = row + [counts[service].sum] + counts[service] : row = row + Array.new(URGENCIES.length+1,0)}
+          (0...@services.length).each {|s| counts[s] ? row = row + [counts[s].sum] + counts[s] : row = row + Array.new(URGENCIES.length+1,0)}
         else
           @services.each { |s| counts[s.to_sym] ? row = row + [counts[s.to_sym].sum] + counts[s.to_sym] : row = row + Array.new(URGENCIES.length+1,0) }
         end

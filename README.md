@@ -13,17 +13,21 @@ Get a PD API key and configure it:
 The plotting script requires python3 to run. <br/>
 Check your python version with the command `python3 --version` in terminal
 
-Also install the matplotlib and pandas libraries using pip install 
+Also install the matplotlib and pandas libraries using pip install
 
 ## ENV Setup
 
 ### Teams (required)
-Specify your desired teams with a string of team ID's separated by spaces
-`export TEAMS="abc123 def456"`
+Specify your desired teams with a string of team ID's separated by semi-colons(';')
+`export TEAMS="ID_1;ID_2"`
 
 > If you don't know the team ID, use the [List teams API call,](https://developer.pagerduty.com/api-reference/reference/REST/openapiv3.json/paths/~1teams/get) <br/>
 > On the PD API platform, paste your API key in the `Test API Token:` field and navigate to the `Try It` tab. <br/>
 > Specify a name in the 'query' section and hit send to retrieve results. The results will be displayed below.
+
+#### Services (optional)
+Specify your desired services per team using the TEAMS variable separated by commas(',') following the team id and colon(':')
+`export TEAMS="ID_1:service1,service2;ID_2:service1,service2,service3"`
 
 ### Urgency (optional)
 Specify the urgencies you want as a string separated by spaces
@@ -101,5 +105,3 @@ Examples Columns:
 | **[:service,:summary]** | **[:escalation_policy,:summary]** | **[:occurrence,:category]** | **[:occurrence,:frequency]** |
 
 > For additional column options, check out the [PagerDuty API response schema for 'List Incidents'](https://developer.pagerduty.com/api-reference/reference/REST/openapiv3.json/paths/~1incidents/get)
-
-
