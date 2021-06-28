@@ -47,7 +47,6 @@ arg2 = ARGV[1] || ""
 
 ext = options[:ext] || false
 columns = options[:columns] || []
-plot = options[:plot] == nil ? options[:plot] : true
 
 
 ### RETRIEVE DATA FROM PAGERDUTY 
@@ -55,12 +54,12 @@ responses = PagerdutyIncidents.new(mode,arg1,arg2)
 
 
 ### PARSE THROUGH PAGERDUTY DATA AND EXPORT AS CSV
-slength = responses.get_data(ext,columns,plot)
+slength = responses.get_data(ext,columns)
 puts "Export complete"
 
 
 ### PLOT DATA
-if plot
+if options[:plot] != false
   puts "Starting plots..."
   urg = (["All"] + PagerdutyIncidents::URGENCIES.map{|u| u.capitalize}).join(',')
   system("./plot.py #{urg} #{responses.team_names.join(',').tr(' ','_')} #{responses.since.strftime("%Y-%B-%m-%d")} #{responses.until.strftime("%Y-%B-%m-%d")}")

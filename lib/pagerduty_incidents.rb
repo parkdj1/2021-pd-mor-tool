@@ -66,8 +66,7 @@ class PagerdutyIncidents
   end
 
   # query pagerduty for incidents and extract details for each
-  def get_data(ext_=true,columns=[],plot=true)
-    puts "Parsing API data"
+  def get_data(ext_=true,columns=[])
     @ext = [] if ext_
     onemonth = @until.month == @since.month && @until.year == @since.year ? true : false
 
@@ -78,7 +77,8 @@ class PagerdutyIncidents
 
       # query and process by urgency (lower risk of overwhelming PD)
       URGENCIES.zip(0...URGENCIES.length).each do |urgency,ind|
-        retrieve_incidents(@since, @until, team, urgency)
+        puts "Retrieving {urgency} urgency incidents for team {num}"
+        retrieve_incidents(@since, @until+1, team, urgency)
         parse_incidents(onemonth, num, ind, ext_, columns)
       end
 
