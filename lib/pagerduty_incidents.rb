@@ -79,12 +79,12 @@ class PagerdutyIncidents
       # query and process by urgency (lower risk of overwhelming PD)
       URGENCIES.zip(0...URGENCIES.length).each do |urgency,ind|
         retrieve_incidents(@since, @until, team, urgency)
-        parse_incidents(onemonth, num, ind, ext_)
+        parse_incidents(onemonth, num, ind, ext_, columns)
       end
 
       # export data to csv
       name = @team_names[num]
-      export_to_csv(name, ext_)
+      export_to_csv(name, ext_,columns)
     end
 
     @services.length
@@ -100,12 +100,12 @@ class PagerdutyIncidents
       @since = @until.prev_month
       @until -= 1
     else
-      @since = Date.new(year,month,1)
+      @since = Date.strptime("{month}-01-{year}",DATE_FORMAT)
       @since.next_month - 1 < Date.today ? @until = @since.next_month - 1 : @until = Date.today
     end
   end
 
-  def parse_incidents(onemonth=true,num,ind,ext)
+  def parse_incidents(onemonth=true,num,ind,ext,columns)
     @incidents.each do |incident|
       onemonth ? date = incident[:created_at].day : date = incident[:created_at].strftime("%m.%d")
       service = incident[:service][:summary]
@@ -121,11 +121,11 @@ class PagerdutyIncidents
         @team_data[date][service.to_sym][ind] += 1
         @services << service if !@services.include? service
       end
-      parse_more_details(date,service,urgency,@team_names[num]) if ext
+      parse_more_details(incident,date,service,URGENCIES[ind],@team_names[num],columns) if ext
     end
   end
 
-  def parse_more_details(date,service,urgency,name)
+  def parse_more_details(incident,date,service,urgency,name,columns)
     row = []
     row << date << name << service << urgency << incident[:description]
     columns.each { |column|
@@ -139,7 +139,7 @@ class PagerdutyIncidents
     @ext << row
   end
 
-  def export_to_csv(name, ext)
+  def export_to_csv(name, ext, columns)
     puts "Writing #{name} data to csv"
     CSV.open("#{@since}_to_#{@until}_pd-data_#{name.tr(' ','_')}.csv","w") do |csv|
       header = ["Day"]
@@ -154,13 +154,12 @@ class PagerdutyIncidents
         end
         csv << row }
     end
-    export_more_details() if ext
-  end
-
-  def export_more_details()
-    CSV.open("#{@since}_to_#{@until}_pd-data_ext.csv","w") do |csv|
-      csv << COL_NAMES + columns.map{|name| name.tr(':[]','').tr('_',' ').tr(',',': ').capitalize}
-      @ext.each { |row| csv << row }
+    if ext
+      CSV.open("#{@since}_to_#{@until}_pd-data_ext.csv","w") do |csv|
+        csv << COL_NAMES + columns.map{|name| name.tr(':[]','').tr('_',' ').tr(',',': ').capitalize}
+        @ext.each { |row| csv << row }
+      end
     end
   end
+
 end

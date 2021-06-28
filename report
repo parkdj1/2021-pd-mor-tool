@@ -33,7 +33,7 @@ EOS
   opts.on("--[no-]plot", "-p") {|p| options[:plot] = p}  
 #  opts.on("-v", "--verbose") {options[:verbose] = true}
 #        -v, --verbose    Toggle verbose mode (default: off)
-  opts.on("-h", "--help") {puts opts.banner && exit}
+  opts.on("-h", "--help") {puts opts.help(); exit}
 end.parse!
 
 
@@ -47,7 +47,7 @@ arg2 = ARGV[1] || ""
 
 ext = options[:ext] || false
 columns = options[:columns] || []
-plot = options[:plot] || true
+plot = options[:plot] == nil ? options[:plot] : true
 
 
 ### RETRIEVE DATA FROM PAGERDUTY 
