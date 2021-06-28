@@ -77,7 +77,7 @@ class PagerdutyIncidents
 
       # query and process by urgency (lower risk of overwhelming PD)
       URGENCIES.zip(0...URGENCIES.length).each do |urgency,ind|
-        puts "Retrieving {urgency} urgency incidents for team {num}"
+        puts "Retrieving #{urgency} urgency incidents for team {num}"
         retrieve_incidents(@since, @until+1, team, urgency)
         parse_incidents(onemonth, num, ind, ext_, columns)
       end
