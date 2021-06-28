@@ -77,7 +77,7 @@ class PagerdutyIncidents
 
       # query and process by urgency (lower risk of overwhelming PD)
       URGENCIES.zip(0...URGENCIES.length).each do |urgency,ind|
-        puts "Retrieving #{urgency} urgency incidents for team {num}"
+        puts "Retrieving #{urgency} urgency incidents for team #{num}"
         retrieve_incidents(@since, @until+1, team, urgency)
         parse_incidents(onemonth, num, ind, ext_, columns)
       end
@@ -100,7 +100,7 @@ class PagerdutyIncidents
       @since = @until.prev_month
       @until -= 1
     else
-      @since = Date.strptime("{month}-01-{year}",DATE_FORMAT)
+      @since = Date.strptime("#{month}-01-#{year}",DATE_FORMAT)
       @since.next_month - 1 < Date.today ? @until = @since.next_month - 1 : @until = Date.today
     end
   end
