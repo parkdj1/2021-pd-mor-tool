@@ -62,7 +62,7 @@ puts "Export complete"
 if options[:plot] != false
   puts "Starting plots..."
   urg = (["All"] + PagerdutyIncidents::URGENCIES.map{|u| u.capitalize}).join(',')
-  system("./plot #{urg} #{responses.team_names.join(',').tr(' ','_')} #{responses.since.strftime("%Y-%B-%m-%d")} #{responses.until.strftime("%Y-%B-%m-%d")}")
+  system("./plot #{urg} #{responses.team_names.join(',').tr(' ','_')} #{responses.since.strftime("%Y-%B-%m-%d")} #{responses.until.strftime("%Y-%B-%m-%d")} ''") 
 end
 
 puts "Report Complete. Have a great month!"

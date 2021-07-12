@@ -145,7 +145,7 @@ class PagerdutyIncidents
       header = ["Day"]
       @services.each {|service| header = header + [service] + URGENCIES.map{|u| u.capitalize}}
       csv << header
-      @team_data.each { |day, counts|
+      @team_data.sort.to_h.each { |day, counts|
         row = [day]
         if SERVICES
           (0...@services.length).each {|s| counts[s] ? row = row + [counts[s].sum] + counts[s] : row = row + Array.new(URGENCIES.length+1,0)}
