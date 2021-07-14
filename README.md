@@ -7,7 +7,7 @@
 Get a PD API key and configure it:
 `export PAGERDUTY_API_KEY="api-token-123"`
 
-> Go to your profile on [the PagerDuty Website](https://ibm.pagerduty.com/users/') and press the blue `Create API User Token` button to make a new key
+> Go to your profile on [the PagerDuty Website](https://ibm.pagerduty.com/users/) and press the blue `Create API User Token` button to make a new key
 
 ## Python Requirements
 The plotting script requires python3 to run. <br/>
