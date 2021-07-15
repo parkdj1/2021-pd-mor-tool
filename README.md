@@ -78,12 +78,13 @@ There are 2 options for specifying the time frame using the mode flag (-m or --m
 `bundle exec ./report --mode="range" 04-20-2020 12-3-2020` <br/>
 
 ### Plotting mode (default: on)
-When plotting mode is on, the report generates a plot for each team and urgency specified <br/>
-The default is 3 plots per team as follows: <br/>
-1. All incidents for the specified time frame
-2. High urgency incidents for the specified time frame
-3. Low urgency incidents for the specified time frame <br/>
-Each plot is a stacked bar chart of the number of incidents per day, separated by services.
+The default is 4 plots per team as follows: <br/>
+1. All incidents for the specified time frame, with separate bars for different urgencies
+2. All incidents for the specified time frame
+3. High urgency incidents for the specified time frame
+4. Low urgency incidents for the specified time frame <br/>
+Plot 1 is a clustered bar chart of the number of incidents per day for a team, separated by urgencies
+Plots 2-4 are stacked bar charts of the number of incidents per day, separated by services.
 
 ### To get an extended report of incidents (default: off)
 Include the ext flag (-e, --ext) and specify any columns to extract using the columns flag (-c, --columns)
