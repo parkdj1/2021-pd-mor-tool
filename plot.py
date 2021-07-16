@@ -96,7 +96,7 @@ for te_am in teams:
   # extract service names
   services = [i for i in team_data.columns.values if i.split('.')[0] not in (urgencies+["Day"])]
   team_data.columns = [("All."+i) if i in services else i for i in team_data.columns.values]
-  # make data (except for 'Day' column) numierc
+  # make data (except for 'Day' column) numeric
 # team_data[team_data.columns.values[1:]]=team_data[team_data.columns.values[1:]].apply(pd.to_numeric)
 
   urg_dat = {}
@@ -119,8 +119,16 @@ for te_am in teams:
     else:
       cgtitle = "{} PagerDuty Incidents - {}".format(team,drange)
     cofile = cgtitle.replace(' ','_').replace(',','_') + "_clustered" + ext
-    subset_clu = team_data.iloc[:,[0]+list(range((len(urgencies)+1)*i+1,(len(urgencies)+1)*i+3))]
+    subset_clu = pd.concat([team_data[['Day']], team_data.iloc[:,list(range(len(urgencies)*i+2,len(urgencies)*(i+1)+1))]], axis=1)
     subset_clu.columns = ['Day'] + urgencies[1:]
     graph(subset_clu, cgtitle, cofile, 'c')
-
+  if len(services) > 1:
+    temp = team_data.drop([i for i in team_data.columns.values if ('All' or 'Day') in i],axis=1)
+    all_clu = team_data[['Day']]
+    for i in range(len(urgencies)-1):
+      all_clu = pd.concat([all_clu, temp.iloc[:,list(range(i,len(temp.columns),len(urgencies)))].sum(1)], axis=1)
+    all_clu.columns = ['Day'] + urgencies[1:]
+    cgtitle = "{} PagerDuty Incidents - {}".format(team,drange)
+    cofile = cgtitle.replace(' ','_').replace(',','_') + "_clustered" + ext
+    graph(all_clu,cgtitle, cofile, 'c')
 
